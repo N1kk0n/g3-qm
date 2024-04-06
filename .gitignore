@@ -1,0 +1,10 @@
+.idea/
+.vscode/
+target/
+queue-manager.iml
+
+*.log
+*.log.*
+*.http
+*.sh
+*.db
