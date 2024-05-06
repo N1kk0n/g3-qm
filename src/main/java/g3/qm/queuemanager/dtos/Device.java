@@ -1,4 +1,4 @@
-package g3.qm.queuemanager.responces;
+package g3.qm.queuemanager.dtos;
 
 public class Device {
     private long device_id;

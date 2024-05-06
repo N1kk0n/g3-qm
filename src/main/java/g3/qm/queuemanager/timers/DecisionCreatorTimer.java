@@ -18,6 +18,7 @@ public class DecisionCreatorTimer extends TimerTask {
     public void run() {
         System.out.println("Create new Decision: " + new Date());
         System.out.println(decisionInfoService.getDeviceList());
+        System.out.println(decisionInfoService.getTaskProfileList());
         timerCreatorService.createDecisionCreatorTimer();
     }
 }
