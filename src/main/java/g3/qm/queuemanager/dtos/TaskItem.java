@@ -2,14 +2,14 @@ package g3.qm.queuemanager.dtos;
 
 public class TaskItem {
     private long task_id;
-    private int program_id;
+    private String program_name;
     private String profile_name;
     private long profile_priority;
     private String profile_status;
     private String device_type;
     private int device_count;
     private boolean profile_static;
-    private int device_id;
+    private String device_name;
 
     public TaskItem() {
     }
@@ -22,12 +22,12 @@ public class TaskItem {
         this.task_id = task_id;
     }
 
-    public int getProgram_id() {
-        return program_id;
+    public String getProgram_name() {
+        return program_name;
     }
 
-    public void setProgram_id(int program_id) {
-        this.program_id = program_id;
+    public void setProgram_name(String program_name) {
+        this.program_name = program_name;
     }
 
     public String getProfile_name() {
@@ -78,26 +78,26 @@ public class TaskItem {
         this.profile_static = profile_static;
     }
 
-    public int getDevice_id() {
-        return device_id;
+    public String getDevice_name() {
+        return device_name;
     }
 
-    public void setDevice_id(int device_id) {
-        this.device_id = device_id;
+    public void setDevice_name(String device_name) {
+        this.device_name = device_name;
     }
 
     @Override
     public String toString() {
         return "TaskItem{" +
                 "task_id=" + task_id +
-                ", program_id=" + program_id +
+                ", program_name=" + program_name +
                 ", profile_name='" + profile_name + '\'' +
                 ", profile_priority=" + profile_priority +
                 ", profile_status='" + profile_status + '\'' +
                 ", device_type='" + device_type + '\'' +
                 ", device_count=" + device_count +
                 ", profile_static=" + profile_static +
-                ", device_id=" + device_id +
+                ", device_name=" + device_name +
                 '}';
     }
 }

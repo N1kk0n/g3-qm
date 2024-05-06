@@ -15,7 +15,7 @@ public class TimerCreatorService {
     public void createDecisionCreatorTimer() {
         DecisionCreatorTimer decisionCreatorTimer = applicationContext.getBean(DecisionCreatorTimer.class);
         //TODO: get this value from database
-        int timerDelay = 15;
+        int timerDelay = 3;
 
         Timer timer = new Timer("DECISION_CREATOR", true);
         timer.schedule(decisionCreatorTimer, timerDelay * 1000);

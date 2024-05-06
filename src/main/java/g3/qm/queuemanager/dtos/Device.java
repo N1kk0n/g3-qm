@@ -1,7 +1,7 @@
 package g3.qm.queuemanager.dtos;
 
 public class Device {
-    private long device_id;
+    private int device_id;
     private String device_name;
     private String device_type;
     private String device_status;
@@ -12,11 +12,11 @@ public class Device {
     public Device() {
     }
 
-    public long getDevice_id() {
+    public int getDevice_id() {
         return device_id;
     }
 
-    public void setDevice_id(long device_id) {
+    public void setDevice_id(int device_id) {
         this.device_id = device_id;
     }
 
