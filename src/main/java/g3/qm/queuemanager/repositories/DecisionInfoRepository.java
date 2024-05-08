@@ -1,12 +1,15 @@
 package g3.qm.queuemanager.repositories;
 
+import g3.qm.queuemanager.dtos.DecisionItem;
 import g3.qm.queuemanager.dtos.Device;
 import g3.qm.queuemanager.dtos.TaskItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -98,24 +101,18 @@ public class DecisionInfoRepository {
         });
     }
 
-    public void clearDecision() {
-        String sql = """
+    @Transactional
+    public void updateDecision(List<DecisionItem> decision) {
+        String deleteSql = """
             delete from decision
         """;
-        SqlParameterSource sqlParameterSource = new MapSqlParameterSource();
-        template.update(sql, sqlParameterSource);
-    }
+        template.update(deleteSql, new MapSqlParameterSource());
 
-    public void addDecisionItem(long taskId, String deviceName, String managerName) {
-        String sql = """
+        String insertSql = """
             insert into decision(task_id, device_name, manager_name)
-            values (:taskId, :deviceName, :managerName)
+            values (:task_id, :device_name, :manager_name)
         """;
-        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
-                .addValue("taskId", taskId)
-                .addValue("deviceName", deviceName)
-                .addValue("managerName", managerName);
-        template.update(sql,sqlParameterSource);
+        template.batchUpdate(insertSql, SqlParameterSourceUtils.createBatch(decision));
     }
 }
 

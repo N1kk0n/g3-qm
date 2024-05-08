@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import g3.qm.queuemanager.dtos.DecisionItem;
 import g3.qm.queuemanager.dtos.Device;
 import g3.qm.queuemanager.dtos.TaskItem;
 import g3.qm.queuemanager.repositories.DecisionInfoRepository;
@@ -21,9 +22,10 @@ public class DecisionCreatorService {
 
     private final Logger LOGGER = LogManager.getLogger(DecisionCreatorService.class);
 
-    private int              queuePage = 1;    // страница вывода очереди (на случай, если очередь очень большая)
-    private List<TaskItem>   queueList;        // список профилей задач
-    private List<Device>     deviceList;       // список вычислительных устройств
+    private int                queuePage = 1;  // страница вывода очереди (на случай, если очередь очень большая)
+    private List<TaskItem>     queueList;      // список профилей задач
+    private List<Device>       deviceList;     // список вычислительных устройств
+    private List<DecisionItem> decision;       // финальное решение
 
     private HashSet<Long>    requestBlackList; // список поставленных заявок в ходе выработки решения
     private HashSet<Integer> deviceBlackList;  // список занимаемых устройств в ходе выработки решения
@@ -58,7 +60,7 @@ public class DecisionCreatorService {
     private void clearWorkResults() {
         requestBlackList.clear();
         deviceBlackList.clear();
-        decisionInfoRepository.clearDecision();
+        decision.clear();
     }
 
     private void chooseDevices(List<TaskItem> taskProfileList) {
@@ -196,7 +198,7 @@ public class DecisionCreatorService {
             }
 
             for (Device ordered_device : device_order_list) {
-                decisionInfoRepository.addDecisionItem(task_id, ordered_device.getDevice_name(), ordered_device.getManager_name());
+                decision.add(new DecisionItem(task_id, ordered_device.getDevice_name(), ordered_device.getManager_name()));
             }
 
             LOGGER.info("Task ID: " + task_id + ", rent devices. Devices: " + device_order_list + " program: " + program_name);
@@ -211,7 +213,6 @@ public class DecisionCreatorService {
     }
 
     private void chooseRequest() {
-        LOGGER.info("chooseRequest call: ");
         if (deviceList.size() == deviceBlackList.size()) {
             LOGGER.info("Size of device list equals black list size. Exit");
             return;
@@ -247,12 +248,11 @@ public class DecisionCreatorService {
     }
 
     public void createDecision() {
-        decisionInfoRepository.clearDecision();
+        decision = new LinkedList<>();
 
         String time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
         LOGGER.info("Begin: " + time_stamp);
 
-        //TODO: What if queue is infinite
         queueList = decisionInfoRepository.getTaskProfileList(queuePage);
         if (queueList.isEmpty()){
             LOGGER.info("Queue list is empty");
@@ -274,7 +274,12 @@ public class DecisionCreatorService {
         requestBlackList = new HashSet<>();
         chooseRequest();
 
+        updateDecision();
         time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
         LOGGER.info("End: " + time_stamp);
+    }
+
+    private void updateDecision() {
+        decisionInfoRepository.updateDecision(decision);
     }
 }
