@@ -21,11 +21,12 @@ public class DecisionCreatorService {
 
     private final Logger LOGGER = LogManager.getLogger(DecisionCreatorService.class);
 
-    private List<TaskItem>   queueList;        //список профилей задач
-    private List<Device>     deviceList;       //список вычислительных устройств
+    private int              queuePage = 1;    // страница вывода очереди (на случай, если очередь очень большая)
+    private List<TaskItem>   queueList;        // список профилей задач
+    private List<Device>     deviceList;       // список вычислительных устройств
 
-    private HashSet<Long>    requestBlackList; //список поставленных заявок в ходе выработки решения
-    private HashSet<Integer> deviceBlackList;  //список занимаемых устройств в ходе выработки решения
+    private HashSet<Long>    requestBlackList; // список поставленных заявок в ходе выработки решения
+    private HashSet<Integer> deviceBlackList;  // список занимаемых устройств в ходе выработки решения
 
     //освобождение устройств
     private void terminateTask(long taskId) {
@@ -210,6 +211,7 @@ public class DecisionCreatorService {
     }
 
     private void chooseRequest() {
+        LOGGER.info("chooseRequest call: ");
         if (deviceList.size() == deviceBlackList.size()) {
             LOGGER.info("Size of device list equals black list size. Exit");
             return;
@@ -238,6 +240,10 @@ public class DecisionCreatorService {
         if (!taskProfilesList.isEmpty()){
             chooseDevices(taskProfilesList);
         }
+
+        queuePage = queuePage + 1;
+        queueList = decisionInfoRepository.getTaskProfileList(queuePage);
+        chooseRequest();
     }
 
     public void createDecision() {
@@ -246,7 +252,8 @@ public class DecisionCreatorService {
         String time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
         LOGGER.info("Begin: " + time_stamp);
 
-        queueList = decisionInfoRepository.getTaskProfileList();
+        //TODO: What if queue is infinite
+        queueList = decisionInfoRepository.getTaskProfileList(queuePage);
         if (queueList.isEmpty()){
             LOGGER.info("Queue list is empty");
             time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());

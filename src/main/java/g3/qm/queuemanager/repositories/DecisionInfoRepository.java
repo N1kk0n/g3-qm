@@ -46,27 +46,42 @@ public class DecisionInfoRepository {
         });
     }
 
-    public List<TaskItem> getTaskProfileList() {
+    public List<TaskItem> getTaskProfileList(int queuePage) {
+        final int pageLimit = 1000;
+        int pageOffset = 0;
+        if (queuePage > 1) {
+            pageOffset = (queuePage - 1) * pageLimit;
+        }
+
         String sql = """
-            select t.task_id,
+            select task_limit.task_id,
                    pr.program_name,
                    profile_name,
                    profile_priority,
                    dtps.constant_value as profile_status,
                    p.device_type, device_count,
                    profile_static, device_name
-            from task_profile tp left join task t on tp.task_id = t.task_id
-                                 left join profile p on p.profile_id = tp.profile_id
-                                 left join program pr on pr.program_id = t.program_id
-                                 left join device d on p.device_id = d.device_id
-                                 left join dict_task_profile_status dtps on tp.profile_status = dtps.constant_status
-            where t.task_id not in (select distinct task_id
-                                    from task_profile tp left join dict_task_profile_status dtps on dtps.constant_status = tp.profile_status
-                                    where dtps.constant_value in ('DEPLOY_IN_PROGRESS', 'COLLECT_IN_PROGRESS', 'UPLOAD_IN_PROGRESS'))
-              and profile_active = true
+            from (
+                select distinct task_id, max(profile_priority)
+                from task_profile
+                where task_id not in (select distinct task_id
+                                      from task_profile tp left join dict_task_profile_status dtps on dtps.constant_status = tp.profile_status
+                                      where dtps.constant_value in ('DEPLOY_IN_PROGRESS', 'COLLECT_IN_PROGRESS', 'UPLOAD_IN_PROGRESS'))
+                group by task_id
+                order by max(profile_priority) desc
+                limit :pageLimit offset :pageOffset
+                ) task_limit left join task t on task_limit.task_id = t.task_id
+                             left join task_profile tp on t.task_id = tp.task_id
+                             left join profile p on p.profile_id = tp.profile_id
+                             left join program pr on pr.program_id = t.program_id
+                             left join device d on p.device_id = d.device_id
+                             left join dict_task_profile_status dtps on tp.profile_status = dtps.constant_status
+            where profile_active = true
             order by profile_priority desc, task_id desc
         """;
-        SqlParameterSource sqlParameterSource = new MapSqlParameterSource();
+        SqlParameterSource sqlParameterSource = new MapSqlParameterSource()
+                .addValue("pageLimit", pageLimit)
+                .addValue("pageOffset", pageOffset);
 
         return template.query(sql, sqlParameterSource, (resultSet, rowNum) -> {
             TaskItem taskItem = new TaskItem();
