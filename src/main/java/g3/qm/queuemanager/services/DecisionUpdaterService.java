@@ -1,10 +1,9 @@
 package g3.qm.queuemanager.services;
 
 import g3.qm.queuemanager.dtos.DecisionItem;
-import g3.qm.queuemanager.repositories.DecisionRepository;
+import g3.qm.queuemanager.repositories.jdbc.DecisionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 

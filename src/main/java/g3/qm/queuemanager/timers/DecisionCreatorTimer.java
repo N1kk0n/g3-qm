@@ -13,9 +13,9 @@ public class DecisionCreatorTimer extends TimerTask {
     @Autowired
     private TimerCreatorService timerCreatorService;
     @Autowired
-    DecisionCreatorService decisionCreatorService;
+    private DecisionCreatorService decisionCreatorService;
     @Autowired
-    DecisionUpdaterService decisionUpdaterService;
+    private DecisionUpdaterService decisionUpdaterService;
 
     @Override
     public void run() {

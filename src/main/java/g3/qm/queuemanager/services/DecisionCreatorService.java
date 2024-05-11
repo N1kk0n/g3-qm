@@ -9,12 +9,11 @@ import java.util.List;
 import g3.qm.queuemanager.dtos.DecisionItem;
 import g3.qm.queuemanager.dtos.Device;
 import g3.qm.queuemanager.dtos.TaskItem;
-import g3.qm.queuemanager.repositories.DecisionRepository;
+import g3.qm.queuemanager.repositories.jdbc.DecisionRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DecisionCreatorService {
@@ -23,7 +22,7 @@ public class DecisionCreatorService {
 
     private final Logger LOGGER = LogManager.getLogger(DecisionCreatorService.class);
 
-    private int                queuePage = 1;  // страница вывода очереди (на случай, если очередь очень большая)
+    private int                queuePage;      // страница вывода очереди (на случай, если очередь очень большая)
     private List<TaskItem>     queueList;      // список профилей задач
     private List<Device>       deviceList;     // список вычислительных устройств
     private List<DecisionItem> decision;       // финальное решение
@@ -249,6 +248,7 @@ public class DecisionCreatorService {
     }
 
     public List<DecisionItem> createDecision() {
+        queuePage = 1;
         decision = new LinkedList<>();
 
         String time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());

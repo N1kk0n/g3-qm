@@ -1,4 +1,4 @@
-package g3.qm.queuemanager.repositories;
+package g3.qm.queuemanager.repositories.jdbc;
 
 import g3.qm.queuemanager.dtos.DecisionItem;
 import g3.qm.queuemanager.dtos.Device;

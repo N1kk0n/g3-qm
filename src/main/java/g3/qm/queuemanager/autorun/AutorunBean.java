@@ -1,5 +1,8 @@
 package g3.qm.queuemanager.autorun;
 
+import g3.qm.queuemanager.dtos.QueueManagerParam;
+import g3.qm.queuemanager.repositories.jdbc.JdbcQueueManagerParamRepository;
+import g3.qm.queuemanager.repositories.jpa.JpaQueueManagerParamRepository;
 import g3.qm.queuemanager.services.TimerCreatorService;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +17,17 @@ public class AutorunBean {
     private Environment environment;
     @Autowired
     private TimerCreatorService timerCreatorService;
+    @Autowired
+    private JdbcQueueManagerParamRepository jdbcParamRepository;
+    @Autowired
+    private JpaQueueManagerParamRepository jpaParamRepository;
 
     @PostConstruct
     public void init() {
         if (!isParamsCorrect()) {
             System.exit(-1);
         }
+        initQueueManagerParams();
         timerCreatorService.createDecisionCreatorTimer();
     }
 
@@ -48,6 +56,15 @@ public class AutorunBean {
             return false;
         }
         return true;
+    }
+
+    private void initQueueManagerParams() {
+        for (QueueManagerParam queueManagerParam : jdbcParamRepository.getParams()) {
+            g3.qm.queuemanager.entites.QueueManagerParam param = new g3.qm.queuemanager.entites.QueueManagerParam();
+            param.setParamName(queueManagerParam.getParamName());
+            param.setParamValue(queueManagerParam.getParamValue());
+            jpaParamRepository.save(param);
+        }
     }
 }
 
