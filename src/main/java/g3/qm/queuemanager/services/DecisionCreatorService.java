@@ -9,16 +9,17 @@ import java.util.List;
 import g3.qm.queuemanager.dtos.DecisionItem;
 import g3.qm.queuemanager.dtos.Device;
 import g3.qm.queuemanager.dtos.TaskItem;
-import g3.qm.queuemanager.repositories.DecisionInfoRepository;
+import g3.qm.queuemanager.repositories.DecisionRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DecisionCreatorService {
     @Autowired
-    private DecisionInfoRepository decisionInfoRepository;
+    private DecisionRepository decisionRepository;
 
     private final Logger LOGGER = LogManager.getLogger(DecisionCreatorService.class);
 
@@ -243,30 +244,30 @@ public class DecisionCreatorService {
         }
 
         queuePage = queuePage + 1;
-        queueList = decisionInfoRepository.getTaskProfileList(queuePage);
+        queueList = decisionRepository.getTaskProfileList(queuePage);
         chooseRequest();
     }
 
-    public void createDecision() {
+    public List<DecisionItem> createDecision() {
         decision = new LinkedList<>();
 
         String time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
         LOGGER.info("Begin: " + time_stamp);
 
-        queueList = decisionInfoRepository.getTaskProfileList(queuePage);
+        queueList = decisionRepository.getTaskProfileList(queuePage);
         if (queueList.isEmpty()){
             LOGGER.info("Queue list is empty");
             time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
             LOGGER.info("End: " + time_stamp);
-            return;
+            return decision;
         }
 
-        deviceList = decisionInfoRepository.getDeviceList();
+        deviceList = decisionRepository.getDeviceList();
         if (deviceList.isEmpty()){
             LOGGER.info("Device list is empty");
             time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
             LOGGER.info("End: " + time_stamp);
-            return;
+            return decision;
         }
 
         //инициализация черных списков для сессии
@@ -274,12 +275,9 @@ public class DecisionCreatorService {
         requestBlackList = new HashSet<>();
         chooseRequest();
 
-        updateDecision();
         time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
         LOGGER.info("End: " + time_stamp);
-    }
 
-    private void updateDecision() {
-        decisionInfoRepository.updateDecision(decision);
+        return decision;
     }
 }

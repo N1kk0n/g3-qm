@@ -9,16 +9,15 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSourceUtils;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Repository
-public class DecisionInfoRepository {
+public class DecisionRepository {
     private final NamedParameterJdbcTemplate template;
 
     @Autowired
-    public DecisionInfoRepository(NamedParameterJdbcTemplate template) {
+    public DecisionRepository(NamedParameterJdbcTemplate template) {
         this.template = template;
     }
 
@@ -101,18 +100,19 @@ public class DecisionInfoRepository {
         });
     }
 
-    @Transactional
-    public void updateDecision(List<DecisionItem> decision) {
-        String deleteSql = """
-            delete from decision
-        """;
-        template.update(deleteSql, new MapSqlParameterSource());
-
+    public void insertDecision(List<DecisionItem> decision) {
         String insertSql = """
             insert into decision(task_id, device_name, manager_name)
             values (:task_id, :device_name, :manager_name)
         """;
         template.batchUpdate(insertSql, SqlParameterSourceUtils.createBatch(decision));
+    }
+
+    public void deleteDecision() {
+        String deleteSql = """
+            delete from decision
+        """;
+        template.update(deleteSql, new MapSqlParameterSource());
     }
 }
 
