@@ -10,11 +10,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class JdbcQueueManagerParamRepository {
+public class JdbcParamRepository {
     private final NamedParameterJdbcTemplate template;
 
     @Autowired
-    public JdbcQueueManagerParamRepository(NamedParameterJdbcTemplate template) {
+    public JdbcParamRepository(NamedParameterJdbcTemplate template) {
         this.template = template;
     }
 

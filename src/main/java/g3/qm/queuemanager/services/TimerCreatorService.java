@@ -1,7 +1,7 @@
 package g3.qm.queuemanager.services;
 
 import g3.qm.queuemanager.entites.QueueManagerParam;
-import g3.qm.queuemanager.repositories.jpa.JpaQueueManagerParamRepository;
+import g3.qm.queuemanager.repositories.jpa.JpaParamRepository;
 import g3.qm.queuemanager.timers.DecisionCreatorTimer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +17,7 @@ public class TimerCreatorService {
     @Autowired
     private ApplicationContext applicationContext;
     @Autowired
-    private JpaQueueManagerParamRepository jpaQueueManagerParamRepository;
+    private JpaParamRepository jpaParamRepository;
 
     private final Logger LOGGER = LogManager.getLogger(TimerCreatorService.class);
 
@@ -35,7 +35,7 @@ public class TimerCreatorService {
     }
 
     private int getDecisionTimeout() {
-        Optional<QueueManagerParam> queueManagerParamOptional = jpaQueueManagerParamRepository.findByParamName("DECISION_TIMEOUT_SEC");
+        Optional<QueueManagerParam> queueManagerParamOptional = jpaParamRepository.findByParamName("DECISION_TIMEOUT_SEC");
         return queueManagerParamOptional
                 .map(queueManagerParam -> Integer.parseInt(queueManagerParam.getParamValue()))
                 .orElse(-1);
