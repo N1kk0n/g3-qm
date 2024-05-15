@@ -68,7 +68,7 @@ public class DecisionRepository {
                 from task_profile
                 where task_id not in (select distinct task_id
                                       from task_profile tp left join dict_task_profile_status dtps on dtps.constant_status = tp.profile_status
-                                      where dtps.constant_value in ('DEPLOY_IN_PROGRESS', 'COLLECT_IN_PROGRESS', 'UPLOAD_IN_PROGRESS'))
+                                      where dtps.constant_value in ('DOWNLOAD_IN_PROGRESS', 'DEPLOY_IN_PROGRESS', 'IN_WORK_PROTECTED', 'COLLECT_IN_PROGRESS', 'UPLOAD_IN_PROGRESS'))
                 group by task_id
                 order by max(profile_priority) desc
                 limit :pageLimit offset :pageOffset
