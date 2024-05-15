@@ -22,7 +22,6 @@ public class DecisionCreatorService {
 
     private final Logger LOGGER = LogManager.getLogger(DecisionCreatorService.class);
 
-    private int                queuePage;       // страница вывода очереди (на случай, если очередь очень большая)
     private List<TaskItem>     queueList;       // список профилей задач
     private List<Device>       deviceList;      // список вычислительных устройств
     private List<DecisionItem> decision;        // финальное решение
@@ -63,7 +62,7 @@ public class DecisionCreatorService {
         decision.clear();
     }
 
-    private void chooseDevices(List<TaskItem> taskProfileList) {
+    private boolean chooseDevices(List<TaskItem> taskProfileList) {
         //идентификатор заявки
         long taskId = taskProfileList.get(0).getTask_id();
         long profilePriority = taskProfileList.get(0).getProfile_priority();
@@ -71,14 +70,14 @@ public class DecisionCreatorService {
 
         //проверка идентификатора заявки на наличие ее в черном списке
         if (taskBlackList.contains(taskId)) {
-            return;
+            return false;
         }
 
         //проверка имеется ли в работе заявка с таким же идентификатором и большим приоритетом
         for (Device device : deviceList) {
             if (device.getTask_id() == taskId &&
                     device.getTask_priority() >= taskProfileList.get(0).getProfile_priority())
-                return;
+                return false;
         }
 
         //список арендуемых устройств для текущей заявки (request_list)
@@ -126,7 +125,7 @@ public class DecisionCreatorService {
                 //если устройство для статической части заявки не найдено, выходим
                 if (!device_found) {
                     deviceOrderList.clear();
-                    return;
+                    return false;
                 }
             } else {
                 String profileDeviceType = taskItem.getDevice_type();
@@ -172,29 +171,23 @@ public class DecisionCreatorService {
         if (deviceOrderList.size() == totalDeviceCount) {
             for (Device ordered_device : deviceOrderList) {
                 if (ordered_device.getTask_id() != -1) {
-
                     LOGGER.info("Task ID: " + taskId + ". Release devices. Stop task with ID: " + ordered_device.getTask_id() + ". Restart");
 
-                    //если устройства заняты другой заявкой, то освобождаем устройства, заносим считающуюся заявку в очередь, перезапускаем алгоритм
+                    //если устройства заняты другой заявкой, то освобождаем устройства, перезапускаем алгоритм
                     terminateTask(ordered_device.getTask_id());
-                    taskProfileList.clear();
-                    deviceOrderList.clear();
                     clearWorkResults();
-                    chooseTask();
-                    return;
+                    deviceOrderList.clear();
+                    return true;
                 }
             }
             if (isTaskWorking(taskId)) {
-
                 LOGGER.info("Task ID: " + taskId + ". Task is working on another devices. Restart");
 
-                //если заявка считается на других устройствах, то освобождаем устройства, заносим считающуюся заявку в очередь, перезапускаем алгоритм
+                //если заявка считается на других устройствах, то освобождаем устройства,  перезапускаем алгоритм
                 terminateTask(taskId);
-                taskProfileList.clear();
-                deviceOrderList.clear();
                 clearWorkResults();
-                chooseTask();
-                return;
+                deviceOrderList.clear();
+                return true;
             }
 
             for (Device ordered_device : deviceOrderList) {
@@ -209,58 +202,67 @@ public class DecisionCreatorService {
             taskBlackList.add(taskId);
         }
         deviceOrderList.clear();
+        return false;
     }
 
     private void chooseTask() {
-        if (deviceList.size() == deviceBlackList.size()) {
-            LOGGER.info("Size of device list equals black list size. Exit");
-            return;
-        }
+        boolean restart = false;
+        for (int queuePage = 1; queuePage < Integer.MAX_VALUE; queuePage++) {
+            if (deviceList.size() == deviceBlackList.size()) {
+                LOGGER.info("Size of device list equals black list size. Exit");
+                return;
+            }
 
-        List<TaskItem> taskProfilesList = new LinkedList<>();
+            if (!restart) {
+                queueList = decisionRepository.getTaskProfileList(queuePage);
+            }
 
-        for (TaskItem taskItem : queueList) {
-            if (taskProfilesList.isEmpty()) {
-                if (taskItem.getProfile_status().equals("IN_QUEUE"))
+            if (queueList.isEmpty()){
+                LOGGER.info("Queue list is empty");
+                return;
+            }
+
+            // Создаем задачу. Задача - список профилей для выполнения
+            List<TaskItem> taskProfilesList = new LinkedList<>();
+            for (TaskItem taskItem : queueList) {
+                if (taskProfilesList.isEmpty()) {
+                    if (taskItem.getProfile_status().equals("IN_QUEUE"))
+                        taskProfilesList.add(taskItem);
+                    continue;
+                }
+                if (taskItem.getTask_id() == taskProfilesList.get(taskProfilesList.size() - 1).getTask_id() &&
+                        taskItem.getProfile_name().equals(taskProfilesList.get(taskProfilesList.size() - 1).getProfile_name()) &&
+                        taskItem.getProfile_status().equals("IN_QUEUE")) {
                     taskProfilesList.add(taskItem);
-                continue;
-            }
-            if (taskItem.getTask_id() == taskProfilesList.get(taskProfilesList.size() - 1).getTask_id() &&
-                taskItem.getProfile_name().equals(taskProfilesList.get(taskProfilesList.size() - 1).getProfile_name()) &&
-                taskItem.getProfile_status().equals("IN_QUEUE")) {
-                taskProfilesList.add(taskItem);
-            } else {
-                chooseDevices(taskProfilesList);
+                } else {
+                    restart = chooseDevices(taskProfilesList);
+                    if (restart) {
+                        queuePage = 0;
+                        taskProfilesList.clear();
+                        break;
+                    }
 
+                    taskProfilesList.clear();
+                    taskProfilesList.add(taskItem);
+
+                }
+            }
+            //Если заявки в списке
+            if (!taskProfilesList.isEmpty()){
+                restart = chooseDevices(taskProfilesList);
+                if (restart) {
+                    queuePage = 0;
+                }
                 taskProfilesList.clear();
-                taskProfilesList.add(taskItem);
             }
         }
-        //Если заявки в списке
-        if (!taskProfilesList.isEmpty()){
-            chooseDevices(taskProfilesList);
-        }
-
-        //Получаем следующую страницу очереди, продолжаем выбирать задачи
-        queuePage = queuePage + 1;
-        queueList = decisionRepository.getTaskProfileList(queuePage);
-        chooseTask();
     }
 
     public List<DecisionItem> createDecision() {
-        queuePage = 1;
         decision = new LinkedList<>();
 
         String time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
         LOGGER.info("Begin: " + time_stamp);
-
-        queueList = decisionRepository.getTaskProfileList(queuePage);
-        if (queueList.isEmpty()){
-            LOGGER.info("Queue list is empty");
-            time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
-            LOGGER.info("End: " + time_stamp);
-            return decision;
-        }
 
         deviceList = decisionRepository.getDeviceList();
         if (deviceList.isEmpty()){
