@@ -28,7 +28,7 @@ public class DecisionRepository {
                           left join dict_device_status dds on d.device_status = dds.constant_status
             where task_id not in (select distinct task_id
                                   from task_profile tp left join dict_task_profile_status dtps on dtps.constant_status = tp.profile_status
-                                  where dtps.constant_value in ('DEPLOY_IN_PROGRESS', 'COLLECT_IN_PROGRESS', 'UPLOAD_IN_PROGRESS'))
+                                  where dtps.constant_value in ('DOWNLOAD_IN_PROGRESS', 'DEPLOY_IN_PROGRESS', 'IN_WORK_PROTECTED', 'COLLECT_IN_PROGRESS', 'UPLOAD_IN_PROGRESS'))
               and device_online = true
               and rm.manager_online = true
             order by task_priority
