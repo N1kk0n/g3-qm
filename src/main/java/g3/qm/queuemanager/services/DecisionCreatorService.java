@@ -22,13 +22,13 @@ public class DecisionCreatorService {
 
     private final Logger LOGGER = LogManager.getLogger(DecisionCreatorService.class);
 
-    private int                queuePage;      // страница вывода очереди (на случай, если очередь очень большая)
-    private List<TaskItem>     queueList;      // список профилей задач
-    private List<Device>       deviceList;     // список вычислительных устройств
-    private List<DecisionItem> decision;       // финальное решение
+    private int                queuePage;       // страница вывода очереди (на случай, если очередь очень большая)
+    private List<TaskItem>     queueList;       // список профилей задач
+    private List<Device>       deviceList;      // список вычислительных устройств
+    private List<DecisionItem> decision;        // финальное решение
 
-    private HashSet<Long>    requestBlackList; // список поставленных заявок в ходе выработки решения
-    private HashSet<Integer> deviceBlackList;  // список занимаемых устройств в ходе выработки решения
+    private HashSet<Long>      taskBlackList;   // список поставленных заявок в ходе выработки решения
+    private HashSet<Integer>   deviceBlackList; // список занимаемых устройств в ходе выработки решения
 
     //освобождение устройств
     private void terminateTask(long taskId) {
@@ -58,161 +58,160 @@ public class DecisionCreatorService {
 
     //служебная: очистка памяти
     private void clearWorkResults() {
-        requestBlackList.clear();
+        taskBlackList.clear();
         deviceBlackList.clear();
         decision.clear();
     }
 
     private void chooseDevices(List<TaskItem> taskProfileList) {
         //идентификатор заявки
-        long task_id = taskProfileList.get(0).getTask_id();
-        long profile_priority = taskProfileList.get(0).getProfile_priority();
-        String program_name = taskProfileList.get(0).getProgram_name();
+        long taskId = taskProfileList.get(0).getTask_id();
+        long profilePriority = taskProfileList.get(0).getProfile_priority();
+        String programName = taskProfileList.get(0).getProgram_name();
 
         //проверка идентификатора заявки на наличие ее в черном списке
-        if (requestBlackList.contains(task_id)) {
+        if (taskBlackList.contains(taskId)) {
             return;
         }
 
         //проверка имеется ли в работе заявка с таким же идентификатором и большим приоритетом
         for (Device device : deviceList) {
-            if (device.getTask_id() == task_id &&
+            if (device.getTask_id() == taskId &&
                     device.getTask_priority() >= taskProfileList.get(0).getProfile_priority())
                 return;
         }
 
         //список арендуемых устройств для текущей заявки (request_list)
-        List<Device> device_order_list = new LinkedList<>();
+        List<Device> deviceOrderList = new LinkedList<>();
         //общее количество устройств, которое нужно найти
-        int total_device_count = 0;
+        int totalDeviceCount = 0;
         for (TaskItem taskItem : taskProfileList)
-            total_device_count = total_device_count + taskItem.getDevice_count();
+            totalDeviceCount = totalDeviceCount + taskItem.getDevice_count();
 
         for (TaskItem taskItem : taskProfileList) {
-            boolean is_static = taskItem.isProfile_static();
+            boolean isStatic = taskItem.isProfile_static();
             //если "поле" заявки статическое
-            if (is_static) {
+            if (isStatic) {
                 String static_dev_name = taskItem.getDevice_name();
                 boolean device_found = false;
                 for (Device device : deviceList) {
-                    String device_name = device.getDevice_name();
-                    long device_priority = device.getTask_priority();
+                    String deviceName = device.getDevice_name();
+                    long devicePriority = device.getTask_priority();
 
-                    if (device_name.equals(static_dev_name) &&
-                        profile_priority > device_priority) {
+                    if (deviceName.equals(static_dev_name) &&
+                        profilePriority > devicePriority) {
                         //проверка наличия идентификатора в черном списке и в списке устройств для заявки
-                        boolean device_in_black_list = false;
-                        boolean device_in_order_list = false;
+                        boolean deviceInBlackList = false;
+                        boolean deviceInOrderList = false;
                         if (deviceBlackList.contains(device.getDevice_id())) {
-                            device_in_black_list = true;
+                            deviceInBlackList = true;
                         }
-                        for (Device ordered_device : device_order_list) {
+                        for (Device ordered_device : deviceOrderList) {
                             if (ordered_device.getDevice_id() == device.getDevice_id()) {
-                                device_in_order_list = true;
+                                deviceInOrderList = true;
                                 break;
                             }
                         }
                         //если устройство с текущим идентификатором уже арендовано, то продолжаем поиск
-                        if (device_in_order_list || device_in_black_list) {
+                        if (deviceInOrderList || deviceInBlackList) {
                             continue;
                         }
                         //если устройство с текущим идентификатором не арендовано, то добавляем его в список арендуемых устройств
-                        device_order_list.add(device);
+                        deviceOrderList.add(device);
                         device_found = true;
 
-                        LOGGER.info("Task ID: " + task_id + ". Profile priority: " + profile_priority + ". Device name (static): " + device_name + ". Device priority (static): " + device_priority);
+                        LOGGER.info("Task ID: " + taskId + ". Profile priority: " + profilePriority + ". Device name (static): " + deviceName + ". Device priority (static): " + devicePriority);
                     }
                 }
                 //если устройство для статической части заявки не найдено, выходим
                 if (!device_found) {
-                    device_order_list.clear();
+                    deviceOrderList.clear();
                     return;
                 }
             } else {
-                String profile_device_type = taskItem.getDevice_type();
+                String profileDeviceType = taskItem.getDevice_type();
                 for (Device device : deviceList) {
                     //получаем идентификатор, тип и приоритет устройства
-                    String device_name = device.getDevice_name();
-                    long device_priority = device.getTask_priority();
-                    String device_type = device.getDevice_type();
+                    String deviceName = device.getDevice_name();
+                    long devicePriority = device.getTask_priority();
+                    String deviceType = device.getDevice_type();
 
-                    profile_device_type = profile_device_type.trim();
-                    device_type = device_type.trim();
+                    profileDeviceType = profileDeviceType.trim();
+                    deviceType = deviceType.trim();
 
-                    if (profile_device_type.equals(device_type) && profile_priority > device_priority) {
+                    if (profileDeviceType.equals(deviceType) && profilePriority > devicePriority) {
 
                         //проверка наличия идентификатора в черном списке и в списке устройств для заявки
-                        boolean device_in_black_list = false;
-                        boolean device_in_order_list = false;
+                        boolean deviceInBlackList = false;
+                        boolean deviceInOrderList = false;
                         if (deviceBlackList.contains(device.getDevice_id())) {
-                            device_in_black_list = true;
+                            deviceInBlackList = true;
                         }
-                        for (Device ordered_device : device_order_list) {
+                        for (Device ordered_device : deviceOrderList) {
                             if (ordered_device.getDevice_id() == device.getDevice_id()) {
-                                device_in_order_list = true;
+                                deviceInOrderList = true;
                                 break;
                             }
                         }
                         //если устройство с текущим идентификатором уже арендовано, то продолжаем поиск
-                        if (device_in_order_list || device_in_black_list) {
+                        if (deviceInOrderList || deviceInBlackList) {
                             continue;
                         }
                         //если устройство с текущим идентификатором не арендовано, то добавляем его в список арендуемых устройств
-                        device_order_list.add(device);
+                        deviceOrderList.add(device);
 
-                        LOGGER.info("Task ID: " + task_id + ". Profile device type: [" + profile_device_type + "]. Profile priority: " + profile_priority + ". Device name: " + device_name + ". Device type: [" + device_type + "]. Device priority: " + device_priority);
+                        LOGGER.info("Task ID: " + taskId + ". Profile device type: [" + profileDeviceType + "]. Profile priority: " + profilePriority + ". Device name: " + deviceName + ". Device type: [" + deviceType + "]. Device priority: " + devicePriority);
 
-                        if (device_order_list.size() == total_device_count) {
+                        if (deviceOrderList.size() == totalDeviceCount) {
                             break;
                         }
                     }
                 }
             }
         }
-        if (device_order_list.size() == total_device_count) {
-            for (Device ordered_device : device_order_list) {
+        if (deviceOrderList.size() == totalDeviceCount) {
+            for (Device ordered_device : deviceOrderList) {
                 if (ordered_device.getTask_id() != -1) {
 
-                    LOGGER.info("Task ID: " + task_id + ": release devices. Stop task with ID: " + ordered_device.getTask_id() + ". Restart");
+                    LOGGER.info("Task ID: " + taskId + ". Release devices. Stop task with ID: " + ordered_device.getTask_id() + ". Restart");
 
-                    //если устройства заняты другой заявкой, то освобождаем устройства, заносим считающуюся заявку в очередь, завершаем работу
+                    //если устройства заняты другой заявкой, то освобождаем устройства, заносим считающуюся заявку в очередь, перезапускаем алгоритм
                     terminateTask(ordered_device.getTask_id());
                     taskProfileList.clear();
-                    device_order_list.clear();
+                    deviceOrderList.clear();
                     clearWorkResults();
-                    chooseRequest();
+                    chooseTask();
                     return;
                 }
             }
-            if (isTaskWorking(task_id)) {
+            if (isTaskWorking(taskId)) {
 
-                LOGGER.info(task_id + ": Request is working on another devices. Restart");
+                LOGGER.info("Task ID: " + taskId + ". Task is working on another devices. Restart");
 
-                //если заявка считается на других устройствах, то освобождаем устройства, заносим считающуюся заявку в очередь, завершаем работу
-                terminateTask(task_id);
+                //если заявка считается на других устройствах, то освобождаем устройства, заносим считающуюся заявку в очередь, перезапускаем алгоритм
+                terminateTask(taskId);
                 taskProfileList.clear();
-                device_order_list.clear();
+                deviceOrderList.clear();
                 clearWorkResults();
-                chooseRequest();
+                chooseTask();
                 return;
             }
 
-            for (Device ordered_device : device_order_list) {
-                decision.add(new DecisionItem(task_id, ordered_device.getDevice_name(), ordered_device.getManager_name()));
+            for (Device ordered_device : deviceOrderList) {
+                decision.add(new DecisionItem(taskId, ordered_device.getDevice_name(), ordered_device.getManager_name()));
             }
 
-            LOGGER.info("Task ID: " + task_id + ", rent devices. Devices: " + device_order_list + " program: " + program_name);
+            LOGGER.info("Task ID: " + taskId + ". Rent devices. Devices: " + deviceOrderList + " program: " + programName);
 
-            //заносим устройства в черный список
-            for (Device ordered_device : device_order_list)
+            //заносим устройства и заявку в черные списки
+            for (Device ordered_device : deviceOrderList)
                 deviceBlackList.add(ordered_device.getDevice_id());
-            //заносим заявку в черный список
-            requestBlackList.add(task_id);
+            taskBlackList.add(taskId);
         }
-        device_order_list.clear();
+        deviceOrderList.clear();
     }
 
-    private void chooseRequest() {
+    private void chooseTask() {
         if (deviceList.size() == deviceBlackList.size()) {
             LOGGER.info("Size of device list equals black list size. Exit");
             return;
@@ -242,9 +241,10 @@ public class DecisionCreatorService {
             chooseDevices(taskProfilesList);
         }
 
+        //Получаем следующую страницу очереди, продолжаем выбирать задачи
         queuePage = queuePage + 1;
         queueList = decisionRepository.getTaskProfileList(queuePage);
-        chooseRequest();
+        chooseTask();
     }
 
     public List<DecisionItem> createDecision() {
@@ -272,8 +272,8 @@ public class DecisionCreatorService {
 
         //инициализация черных списков для сессии
         deviceBlackList = new HashSet<>();
-        requestBlackList = new HashSet<>();
-        chooseRequest();
+        taskBlackList = new HashSet<>();
+        chooseTask();
 
         time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
         LOGGER.info("End: " + time_stamp);
