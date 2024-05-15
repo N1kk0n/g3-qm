@@ -224,15 +224,6 @@ public class DecisionCreatorService {
 
         boolean restart = false;
         for (int queuePage = 1; queuePage < Integer.MAX_VALUE; queuePage++) {
-            if (deviceList.size() == deviceBlackList.size()) {
-                LOGGER.info("Size of device list equals black list size. Exit");
-                time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
-                LOGGER.info("End: " + time_stamp);
-
-                finishClean();
-                return decision;
-            }
-
             if (!restart) {
                 queueList = decisionRepository.getTaskProfileList(queuePage);
             }
@@ -251,6 +242,14 @@ public class DecisionCreatorService {
                 if (restart) {
                     queuePage = 0;
                     break;
+                }
+                if (deviceList.size() == deviceBlackList.size()) {
+                    LOGGER.info("Size of device list equals black list size. Exit");
+                    time_stamp = new SimpleDateFormat("dd/MM/yy HH.mm.ss.SSS").format(Calendar.getInstance().getTime());
+                    LOGGER.info("End: " + time_stamp);
+
+                    finishClean();
+                    return decision;
                 }
             }
         }
