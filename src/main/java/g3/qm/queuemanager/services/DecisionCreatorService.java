@@ -72,8 +72,8 @@ public class DecisionCreatorService {
     private boolean chooseDevices(TaskItem taskProfile) {
         //идентификатор заявки
         long taskId = taskProfile.getTask_id();
+        int programId = taskProfile.getProgram_id();
         long profilePriority = taskProfile.getProfile_priority();
-        String programName = taskProfile.getProgram_name();
 
         //проверка идентификатора заявки на наличие ее в черном списке
         if (taskBlackList.contains(taskId)) {
@@ -121,7 +121,7 @@ public class DecisionCreatorService {
                     deviceOrderList.add(device);
                     device_found = true;
 
-                    LOGGER.info("Task ID: " + taskId + ". Profile priority: " + profilePriority + ". Device name (static): " + deviceName + ". Device priority (static): " + devicePriority);
+                    LOGGER.info("Task ID: " + taskId + ". Program ID: " + programId + ". Profile priority: " + profilePriority + ". Device name (static): " + deviceName + ". Device priority (static): " + devicePriority);
                 }
             }
             //если устройство для статической части заявки не найдено, выходим
@@ -160,7 +160,7 @@ public class DecisionCreatorService {
                     //если устройство с текущим идентификатором не арендовано, то добавляем его в список арендуемых устройств
                     deviceOrderList.add(device);
 
-                    LOGGER.info("Task ID: " + taskId + ". Profile device type: [" + profileDeviceType + "]. Profile priority: " + profilePriority + ". Device name: " + deviceName + ". Device type: [" + deviceType + "]. Device priority: " + devicePriority);
+                    LOGGER.info("Task ID: " + taskId + ". Program ID: " + programId + ". Profile device type: [" + profileDeviceType + "]. Profile priority: " + profilePriority + ". Device name: " + deviceName + ". Device type: [" + deviceType + "]. Device priority: " + devicePriority);
 
                     if (deviceOrderList.size() == totalDeviceCount) {
                         break;
@@ -193,12 +193,12 @@ public class DecisionCreatorService {
 
             //добавляем устройства в решение, заносим устройства и заявку в черные списки
             for (Device ordered_device : deviceOrderList) {
-                decision.add(new DecisionItem(taskId, ordered_device.getDevice_name(), ordered_device.getManager_name()));
+                decision.add(new DecisionItem(taskId, programId, ordered_device.getDevice_name(), ordered_device.getManager_name()));
                 deviceBlackList.add(ordered_device.getDevice_id());
             }
             taskBlackList.add(taskId);
 
-            LOGGER.info("Task ID: " + taskId + ". Rent devices. Devices: " + deviceOrderList + " program: " + programName);
+            LOGGER.info("Task ID: " + taskId + ". Program ID: " + programId + ". Rent devices. Devices: " + deviceOrderList);
         }
         deviceOrderList.clear();
         return false;

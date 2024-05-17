@@ -57,6 +57,7 @@ public class DecisionRepository {
 
         String sql = """
             select task_limit.task_id,
+                   pr.program_id,
                    pr.program_name,
                    profile_name,
                    profile_priority,
@@ -88,6 +89,7 @@ public class DecisionRepository {
         return template.query(sql, sqlParameterSource, (resultSet, rowNum) -> {
             TaskItem taskItem = new TaskItem();
             taskItem.setTask_id(resultSet.getLong("TASK_ID"));
+            taskItem.setProgram_id(resultSet.getInt("PROGRAM_ID"));
             taskItem.setProgram_name(resultSet.getString("PROGRAM_NAME"));
             taskItem.setProfile_name(resultSet.getString("PROFILE_NAME"));
             taskItem.setProfile_priority(resultSet.getLong("PROFILE_PRIORITY"));
@@ -102,8 +104,8 @@ public class DecisionRepository {
 
     public void insertDecision(List<DecisionItem> decision) {
         String insertSql = """
-            insert into decision(task_id, device_name, manager_name)
-            values (:task_id, :device_name, :manager_name)
+            insert into decision(task_id, program_id, device_name, manager_name)
+            values (:task_id, :program_id, :device_name, :manager_name)
         """;
         template.batchUpdate(insertSql, SqlParameterSourceUtils.createBatch(decision));
     }

@@ -2,14 +2,16 @@ package g3.qm.queuemanager.dtos;
 
 public class DecisionItem {
     private long task_id;
+    private int program_id;
     private String device_name;
     private String manager_name;
 
     public DecisionItem() {
     }
 
-    public DecisionItem(long task_id, String device_name, String manager_name) {
+    public DecisionItem(long task_id, int program_id, String device_name, String manager_name) {
         this.task_id = task_id;
+        this.program_id = program_id;
         this.device_name = device_name;
         this.manager_name = manager_name;
     }
@@ -20,6 +22,14 @@ public class DecisionItem {
 
     public void setTask_id(long task_id) {
         this.task_id = task_id;
+    }
+
+    public int getProgram_id() {
+        return program_id;
+    }
+
+    public void setProgram_id(int program_id) {
+        this.program_id = program_id;
     }
 
     public String getDevice_name() {

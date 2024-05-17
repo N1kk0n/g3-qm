@@ -2,6 +2,7 @@ package g3.qm.queuemanager.dtos;
 
 public class TaskItem {
     private long task_id;
+    private int program_id;
     private String program_name;
     private String profile_name;
     private long profile_priority;
@@ -20,6 +21,14 @@ public class TaskItem {
 
     public void setTask_id(long task_id) {
         this.task_id = task_id;
+    }
+
+    public int getProgram_id() {
+        return program_id;
+    }
+
+    public void setProgram_id(int program_id) {
+        this.program_id = program_id;
     }
 
     public String getProgram_name() {
