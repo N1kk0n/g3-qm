@@ -1,6 +1,6 @@
 package g3.qm.queuemanager.dtos;
 
-public class TaskItem {
+public class TaskProfile {
     private long task_id;
     private int program_id;
     private String program_name;
@@ -12,7 +12,7 @@ public class TaskItem {
     private boolean profile_static;
     private String device_name;
 
-    public TaskItem() {
+    public TaskProfile() {
     }
 
     public long getTask_id() {

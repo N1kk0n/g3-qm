@@ -5,7 +5,6 @@ public class Device {
     private String device_name;
     private String device_type;
     private String device_status;
-    private String manager_name;
     private long task_id;
     private long task_priority;
 
@@ -44,13 +43,6 @@ public class Device {
         this.device_status = device_status;
     }
 
-    public String getManager_name() {
-        return manager_name;
-    }
-
-    public void setManager_name(String manager_name) {
-        this.manager_name = manager_name;
-    }
 
     public long getTask_id() {
         return task_id;
@@ -75,7 +67,6 @@ public class Device {
                 ", device_name='" + device_name + '\'' +
                 ", device_type='" + device_type + '\'' +
                 ", device_status='" + device_status + '\'' +
-                ", manager_name='" + manager_name + '\'' +
                 ", task_id=" + task_id +
                 ", task_priority=" + task_priority +
                 '}';

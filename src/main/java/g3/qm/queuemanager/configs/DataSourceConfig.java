@@ -1,50 +1,52 @@
 package g3.qm.queuemanager.configs;
 
-import org.postgresql.ds.PGSimpleDataSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+
+import javax.sql.DataSource;
 
 @Configuration
 public class DataSourceConfig {
-    @Autowired
-    private Environment environment;
 
     @Bean
-    public NamedParameterJdbcTemplate template() {
-        final String HOST_PORT = "host.port";
-        final String ROOT_CERT = "root.cert";
-        final String USER_CERT = "user.cert";
-        final String USER_KEY = "user.key.pk8";
+    @ConfigurationProperties("spring.datasource.state")
+    public DataSourceProperties stateDataSourceProperties() {
+        return new DataSourceProperties();
+    }
 
-        final String DB_NAME = "g3";
+    @Primary
+    @Bean
+    public DataSource stateDataSource() {
+        return stateDataSourceProperties()
+                .initializeDataSourceBuilder()
+                .build();
+    }
 
-        StringBuilder urlBuilder = new StringBuilder();
-        urlBuilder
-                .append("jdbc:postgresql://")
-                .append(environment.getProperty(HOST_PORT))
-                .append("/")
-                .append(DB_NAME)
-                .append("?")
-                .append("user=g3qm")
-                .append("&")
-                .append("ssl=true")
-                .append("&")
-                .append("sslmode=verify-full")
-                .append("&")
-                .append("sslrootcert=").append(environment.getProperty(ROOT_CERT))
-                .append("&")
-                .append("sslcert=").append(environment.getProperty(USER_CERT))
-                .append("&")
-                .append("sslkey=").append(environment.getProperty(USER_KEY));
+    @Primary
+    @Bean
+    public NamedParameterJdbcTemplate stateJdbcTemplate() {
+        return new NamedParameterJdbcTemplate(stateDataSource());
+    }
 
-        DataSourceBuilder<?> builder = DataSourceBuilder.create();
-        builder.type(PGSimpleDataSource.class);
-        builder.driverClassName("org.postgresql.Driver");
-        builder.url(urlBuilder.toString());
-        return new NamedParameterJdbcTemplate(builder.build());
+    @Bean
+    @ConfigurationProperties("spring.datasource.inner")
+    public DataSourceProperties innerDataSourceProperties() {
+        return new DataSourceProperties();
+    }
+
+    @Bean
+    public DataSource innerDataSource() {
+        return innerDataSourceProperties()
+                .initializeDataSourceBuilder()
+                .build();
+    }
+
+    @Bean
+    public NamedParameterJdbcTemplate innerJdbcTemplate() {
+        return new NamedParameterJdbcTemplate(innerDataSource());
     }
 }

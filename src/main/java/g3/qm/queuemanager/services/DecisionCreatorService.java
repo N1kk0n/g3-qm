@@ -2,11 +2,10 @@ package g3.qm.queuemanager.services;
 
 import g3.qm.queuemanager.dtos.DecisionItem;
 import g3.qm.queuemanager.dtos.Device;
-import g3.qm.queuemanager.dtos.TaskItem;
-import g3.qm.queuemanager.repositories.jdbc.DecisionRepository;
+import g3.qm.queuemanager.dtos.TaskProfile;
+import g3.qm.queuemanager.repositories.state.DecisionRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
@@ -17,12 +16,16 @@ import java.util.List;
 
 @Service
 public class DecisionCreatorService {
-    @Autowired
-    private DecisionRepository decisionRepository;
+
+    private final DecisionRepository decisionRepository;
+
+    public DecisionCreatorService(DecisionRepository decisionRepository) {
+        this.decisionRepository = decisionRepository;
+    }
 
     private final Logger LOGGER = LogManager.getLogger(DecisionCreatorService.class);
 
-    private List<TaskItem> queueList;         // список профилей задач
+    private List<TaskProfile> queueList;         // список профилей задач
     private List<Device> deviceList;          // список вычислительных устройств
     private List<DecisionItem> decision;      // финальное решение
 
@@ -32,7 +35,7 @@ public class DecisionCreatorService {
     //освобождение устройств
     private void terminateTask(long taskId) {
         //обнуляем статус
-        for (TaskItem taskProfile : queueList)
+        for (TaskProfile taskProfile : queueList)
             if (taskProfile.getTask_id() == taskId && taskProfile.getProfile_status().equals("IN_WORK"))
                 taskProfile.setProfile_status("IN_QUEUE");
         //убираем признаки занятого устройства
@@ -47,8 +50,8 @@ public class DecisionCreatorService {
     //проверка заявки на состояние счета
     private boolean isTaskWorking(long taskId) {
         boolean is_working = false;
-        for (TaskItem taskItem : queueList)
-            if (taskItem.getTask_id() == taskId && taskItem.getProfile_status().equals("IN_WORK")) {
+        for (TaskProfile taskProfile : queueList)
+            if (taskProfile.getTask_id() == taskId && taskProfile.getProfile_status().equals("IN_WORK")) {
                 is_working = true;
                 break;
             }
@@ -69,7 +72,7 @@ public class DecisionCreatorService {
         deviceList.clear();
     }
 
-    private boolean chooseDevices(TaskItem taskProfile) {
+    private boolean chooseDevices(TaskProfile taskProfile) {
         //идентификатор заявки
         long taskId = taskProfile.getTask_id();
         int programId = taskProfile.getProgram_id();
@@ -193,7 +196,7 @@ public class DecisionCreatorService {
 
             //добавляем устройства в решение, заносим устройства и заявку в черные списки
             for (Device ordered_device : deviceOrderList) {
-                decision.add(new DecisionItem(taskId, programId, ordered_device.getDevice_name(), ordered_device.getManager_name()));
+                decision.add(new DecisionItem(taskId, programId, ordered_device.getDevice_name()));
                 deviceBlackList.add(ordered_device.getDevice_id());
             }
             taskBlackList.add(taskId);
@@ -237,7 +240,7 @@ public class DecisionCreatorService {
                 return decision;
             }
 
-            for (TaskItem taskProfile : queueList) {
+            for (TaskProfile taskProfile : queueList) {
                 restart = chooseDevices(taskProfile);
                 if (restart) {
                     queuePage = 0;
