@@ -3,12 +3,12 @@ package g3.qm.queuemanager.controllers;
 import g3.qm.queuemanager.message.KafkaMessage;
 import g3.qm.queuemanager.message.MessageContent;
 import g3.qm.queuemanager.producers.MessageProducerService;
-import g3.qm.queuemanager.repositories.inner.InnerParamRepository;
 import g3.qm.queuemanager.services.DecisionUpdaterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 @Controller
 public class MainController {
@@ -32,22 +32,26 @@ public class MainController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/test_message")
-    public ResponseEntity<String> testMessage() {
-        MessageContent content = new MessageContent();
-        content.setRoute_id(1L);
-        content.setGraph_id(11L);
-        content.setOperation("test");
-        content.setTask_id(111L);
-        content.setSession_id(1111L);
+    @GetMapping("/test_message/{count}")
+    public ResponseEntity<String> testMessage(@PathVariable Integer count) {
+        for (long i = 1; i <= count; i++) {
+            MessageContent content = new MessageContent();
+            content.setRoute_id(i);
+            content.setGraph_id(10 * i);
+            content.setOperation("test");
+            content.setTask_id(100 * i);
+            content.setSession_id(1000 * i);
 
-        KafkaMessage message = new KafkaMessage();
-        message.setRoute_id(content.getRoute_id());
-        message.setProducer("qm");
-        message.setConsumer("qm");
-        message.setContent(MessageContent.json(content));
+            KafkaMessage message = new KafkaMessage();
+            message.setRoute_id(content.getRoute_id());
+            message.setProducer("qm");
+            message.setConsumer("rm");
+            message.setIs_received(false);
+            message.setContent(MessageContent.json(content));
 
-        messageProducerService.sendMessage("qm-topic", message);
+            messageProducerService.sendMessage("rm-topic", message);
+        }
+
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

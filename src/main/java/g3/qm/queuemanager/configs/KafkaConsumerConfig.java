@@ -31,8 +31,6 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
-
-
     @Bean
     public Map<String, Object> consumerConfigs() {
         Map<String, Object> configProps = new HashMap<>();
@@ -41,6 +39,5 @@ public class KafkaConsumerConfig {
         configProps.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, UUIDDeserializer.class.getName());
         return configProps;
     }
-
 }
 

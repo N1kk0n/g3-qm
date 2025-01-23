@@ -20,6 +20,7 @@ public class KafkaMessage {
     private Long route_id;
     private String producer;
     private String consumer;
+    private Boolean is_received;
     private String content;
 
     public static MessageContent getContentObject(KafkaMessage message) {

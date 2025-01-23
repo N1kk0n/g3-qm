@@ -21,7 +21,7 @@ public class TopicMessageRepository {
                 INSERT INTO state_schema.topic_message (unique_id, route_id, producer_component, consumer_component, is_received, content)
                 VALUES (?, ?, ?, ?, ?, ?::JSON)
                 """
-                , message.getUnique_id(), message.getRoute_id(), message.getProducer(), message.getConsumer(), false, message.getContent());
+                , message.getUnique_id(), message.getRoute_id(), message.getProducer(), message.getConsumer(), message.getIs_received(), message.getContent());
     }
 
     public KafkaMessage getMessage(UUID message_uuid) {
@@ -35,6 +35,7 @@ public class TopicMessageRepository {
                     message.setRoute_id(rs.getLong("route_id"));
                     message.setProducer(rs.getString("producer_component"));
                     message.setConsumer(rs.getString("consumer_component"));
+                    message.setIs_received(rs.getBoolean("is_received"));
                     message.setContent(rs.getString("content"));
                     return message;
                 }, message_uuid);

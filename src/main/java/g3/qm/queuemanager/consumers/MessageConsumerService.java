@@ -24,11 +24,13 @@ public class MessageConsumerService {
     @KafkaListener(topics = TOPIC_NAME, groupId = "qm")
     public void receiveMessage(UUID message_uuid) {
         KafkaMessage message = topicMessageRepository.getMessage(message_uuid);
+        if (message.getIs_received()) {
+            return;
+        }
 
         LOGGER.info("Message received: " +  message);
         MessageContent content = KafkaMessage.getContentObject(message);
         LOGGER.info("Message content: " + content);
-
 
         topicMessageRepository.commitReceiveMessage(message_uuid);
     }

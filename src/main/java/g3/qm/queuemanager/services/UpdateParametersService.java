@@ -35,7 +35,7 @@ public class UpdateParametersService {
                 setLocalParam(managerParam);
             }
         } catch (Exception ex) {
-            LOGGER.error("Error while init queue params. Exception message: ", ex);
+            LOGGER.error("Error while init queue manager params. Exception message: ", ex);
             System.exit(1);
         }
     }
