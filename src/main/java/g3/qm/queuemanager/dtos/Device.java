@@ -1,5 +1,12 @@
 package g3.qm.queuemanager.dtos;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
 public class Device {
     private int device_id;
     private String device_name;
@@ -7,58 +14,6 @@ public class Device {
     private String device_status;
     private long task_id;
     private long task_priority;
-
-    public Device() {
-    }
-
-    public int getDevice_id() {
-        return device_id;
-    }
-
-    public void setDevice_id(int device_id) {
-        this.device_id = device_id;
-    }
-
-    public String getDevice_name() {
-        return device_name;
-    }
-
-    public void setDevice_name(String device_name) {
-        this.device_name = device_name;
-    }
-
-    public String getDevice_type() {
-        return device_type;
-    }
-
-    public void setDevice_type(String device_type) {
-        this.device_type = device_type;
-    }
-
-    public String getDevice_status() {
-        return device_status;
-    }
-
-    public void setDevice_status(String device_status) {
-        this.device_status = device_status;
-    }
-
-
-    public long getTask_id() {
-        return task_id;
-    }
-
-    public void setTask_id(long task_id) {
-        this.task_id = task_id;
-    }
-
-    public long getTask_priority() {
-        return task_priority;
-    }
-
-    public void setTask_priority(long task_priority) {
-        this.task_priority = task_priority;
-    }
 
     @Override
     public String toString() {
