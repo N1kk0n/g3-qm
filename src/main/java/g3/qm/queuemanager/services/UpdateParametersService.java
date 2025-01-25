@@ -29,7 +29,7 @@ public class UpdateParametersService {
         innerParamRepository.addParam(remoteParam.getParamName(), remoteParam.getParamValue());
     }
 
-    public void initSelfParams() {
+    public void updateSelfParams() {
         try {
             for (QueueManagerParam managerParam : getRemoteParams()) {
                 setLocalParam(managerParam);
