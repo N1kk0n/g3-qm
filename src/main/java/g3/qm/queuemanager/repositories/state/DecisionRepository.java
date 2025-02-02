@@ -100,19 +100,19 @@ public class DecisionRepository {
         });
     }
 
-    public void insertDecision(List<DecisionItem> decision) {
-        String insertSql = """
-            insert into state_schema.decision(task_id, program_id, device_name)
-            values (:task_id, :program_id, :device_name)
-        """;
-        template.batchUpdate(insertSql, SqlParameterSourceUtils.createBatch(decision));
-    }
-
-    public void deleteDecision() {
-        String deleteSql = """
-            delete from state_schema.decision
-        """;
-        template.update(deleteSql, new MapSqlParameterSource());
-    }
+//    public void insertDecision(List<DecisionItem> decision) {
+//        String insertSql = """
+//            insert into state_schema.decision(task_id, program_id, device_name)
+//            values (:task_id, :program_id, :device_name)
+//        """;
+//        template.batchUpdate(insertSql, SqlParameterSourceUtils.createBatch(decision));
+//    }
+//
+//    public void deleteDecision() {
+//        String deleteSql = """
+//            delete from state_schema.decision
+//        """;
+//        template.update(deleteSql, new MapSqlParameterSource());
+//    }
 }
 

@@ -1,4 +1,4 @@
-package g3.qm.queuemanager.message;
+package g3.qm.queuemanager.dtos.kafka;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

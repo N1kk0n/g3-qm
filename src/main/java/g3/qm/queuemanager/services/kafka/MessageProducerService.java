@@ -1,7 +1,6 @@
-package g3.qm.queuemanager.producers;
+package g3.qm.queuemanager.services.kafka;
 
-import g3.qm.queuemanager.consumers.MessageConsumerService;
-import g3.qm.queuemanager.message.KafkaMessage;
+import g3.qm.queuemanager.dtos.kafka.Message;
 import g3.qm.queuemanager.repositories.state.TopicMessageRepository;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.logging.log4j.LogManager;
@@ -10,7 +9,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLException;
 import java.util.UUID;
 
 @Service
@@ -25,7 +23,7 @@ public class MessageProducerService {
         this.kafkaProducerTemplate = kafkaProducerTemplate;
     }
 
-    public void sendMessage(String topicName, KafkaMessage message) {
+    public void sendMessage(String topicName, Message message) {
         long key = message.getRoute_id();
         try {
             int updateCount = topicMessageRepository

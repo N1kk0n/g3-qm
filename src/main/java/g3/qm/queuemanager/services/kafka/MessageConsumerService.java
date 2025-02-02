@@ -1,6 +1,6 @@
-package g3.qm.queuemanager.consumers;
+package g3.qm.queuemanager.services.kafka;
 
-import g3.qm.queuemanager.message.KafkaMessage;
+import g3.qm.queuemanager.dtos.kafka.Message;
 import g3.qm.queuemanager.repositories.state.StateRouteRepository;
 import g3.qm.queuemanager.repositories.state.TopicMessageRepository;
 import g3.qm.queuemanager.services.RouterService;
@@ -31,7 +31,7 @@ public class MessageConsumerService {
 
     @KafkaListener(topics = TOPIC_NAME, groupId = "qm")
     public void receiveMessage(UUID message_uuid, Acknowledgment acknowledgment) {
-        KafkaMessage message = topicMessageRepository.getMessage(message_uuid);
+        Message message = topicMessageRepository.getMessage(message_uuid);
         if (message.getIs_received()) {
             LOGGER.info("Message received earlier. Message: " + message);
             acknowledgment.acknowledge();

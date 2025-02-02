@@ -30,7 +30,7 @@ public class StateRouteRepository {
         MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource()
                 .addValue("routeId", routeId);
         Integer status = template.queryForObject(sql, sqlParameterSource, Integer.class);
-        return status == null || status != 1;
+        return status != 1;
     }
 
     public void setRouteStatus(long routeId, int status) {

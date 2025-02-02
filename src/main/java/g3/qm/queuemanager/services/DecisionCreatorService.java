@@ -196,11 +196,11 @@ public class DecisionCreatorService {
 
             //добавляем устройства в решение, заносим устройства и заявку в черные списки
             for (Device ordered_device : deviceOrderList) {
-                decision.add(new DecisionItem(taskId, programId, ordered_device.getDevice_name()));
                 deviceBlackList.add(ordered_device.getDevice_id());
             }
             taskBlackList.add(taskId);
 
+            decision.add(new DecisionItem(taskId, programId, deviceOrderList));
             LOGGER.info("Task ID: " + taskId + ". Program ID: " + programId + ". Rent devices. Devices: " + deviceOrderList);
         }
         deviceOrderList.clear();
